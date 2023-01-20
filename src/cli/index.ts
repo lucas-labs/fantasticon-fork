@@ -126,6 +126,8 @@ const config = () => {
       'public URL to the fonts directory (used in the generated CSS)'
     )
 
+    .option('-l, --add-ligatures', 'add ligatures' + printDefaultValue(false))
+
     .option('--debug', 'display errors stack trace' + printDefaultValue(false))
 
     .option('--silent', 'run with no logs' + printDefaultValue(false));
@@ -150,7 +152,8 @@ const buildOptions = async (cmd: commander.Command, loadedConfig = {}) => {
       selector: opts.selector,
       tag: opts.tag,
       prefix: opts.prefix,
-      fontsUrl: opts.fontsUrl
+      fontsUrl: opts.fontsUrl,
+      addLigatures: opts.addLigatures
     })
   };
 };
