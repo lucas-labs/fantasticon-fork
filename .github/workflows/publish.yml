@@ -1,0 +1,73 @@
+name: "🚀 Publish"
+on:
+  release:
+    types: [published]
+
+concurrency:
+  group: publish-${{ github.ref }}
+  cancel-in-progress: true
+
+defaults:
+  run:
+    shell: 'bash'
+
+jobs:
+  pack:
+    name: "🎁 Pack library"
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: 📁 Checkout Repository
+        uses: actions/checkout@v3
+        with:
+          fetch-depth: 0
+
+      - name: 🟢 Setup Node.js
+        uses: actions/setup-node@v3
+        with:
+          node-version-file: .nvmrc
+          cache: npm
+
+      - name: 📦 Install Dependencies
+        run: mkdir node_modules && npm ci
+
+      - name: 🏗️ Build 
+        run: npm run build
+
+      - name: 🎁 Make .tgz pack
+        run: npm run tgz
+
+      - name: ⬆️ Upload Artifact
+        uses: actions/upload-artifact@v3.1.1
+        with:
+          name: plots-package
+          path: "*.tgz"
+
+  publish:
+    needs: pack
+    name: "🚀 Publish"
+    runs-on: ubuntu-latest
+    
+    steps:
+      - name: 📁 Checkout Repository
+        uses: actions/checkout@v3
+        with:
+          fetch-depth: 0
+
+      - name: ⬇️ Download Artifact
+        uses: actions/download-artifact@v3.0.1
+        with:
+          name: plots-package
+
+      - name: 🟢 Setup Node.js
+        uses: actions/setup-node@v3
+        with:
+          node-version-file: .nvmrc
+          cache: npm
+
+      - name: 🚀 Publish
+        run: npm publish $(ls *.tgz)
+        env:
+          NODE_AUTH_TOKEN: ${{secrets.GITHUB_TOKEN}}
+
+
